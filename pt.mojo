@@ -246,34 +246,42 @@ def main():
     cy = cx.cross(cam.dir).norm() * 0.5135
     scene = create_scene()
 
-    for y in range(h):
-        print("Rendering row ", y)
-        for x in range(w):
-            for sy in range(2):
-                for sx in range(2):
-                    cumulative_radiance = Vec(0, 0, 0)
-                    for _ in range(samples):
-                        r1 = 2 * random_float64()
-                        r2 = 2 * random_float64()
-                        dx = sqrt(r1) - 1 if r1 < 1 else 1 - sqrt(2 - r1)
-                        dy = sqrt(r2) - 1 if r2 < 1 else 1 - sqrt(2 - r2)
-                        d = (
-                            cx * (((sx + 0.5 + dx) / 2 + x) / w - 0.5)
-                            + cy * (((sy + 0.5 + dy) / 2 + y) / h - 0.5)
-                            + cam.dir
-                        )
-                        cumulative_radiance += radiance(
-                            {cam.origin + d * 135, d.norm()}, 0, scene
-                        ) * (1.0 / samples)
-                    i = (h - y - 1) * w + x
-                    image[i] += (
-                        Vec(
-                            clamp(cumulative_radiance.x),
-                            clamp(cumulative_radiance.y),
-                            clamp(cumulative_radiance.z),
-                        )
-                        * 0.25
+    fn sample_one_pixel(x: Int, y: Int) -> Vec:
+        pixel_radiance = Vec(0, 0, 0)
+        for sy in range(2):
+            for sx in range(2):
+                subpixel_radiance = Vec(0, 0, 0)
+                for _ in range(samples):
+                    r1 = 2 * random_float64()
+                    r2 = 2 * random_float64()
+                    dx = sqrt(r1) - 1 if r1 < 1 else 1 - sqrt(2 - r1)
+                    dy = sqrt(r2) - 1 if r2 < 1 else 1 - sqrt(2 - r2)
+                    d = (
+                        cx * (((sx + 0.5 + dx) / 2 + x) / w - 0.5)
+                        + cy * (((sy + 0.5 + dy) / 2 + y) / h - 0.5)
+                        + cam.dir
                     )
+                    subpixel_radiance += radiance(
+                        {cam.origin + d * 135, d.norm()}, 0, scene
+                    ) * (1.0 / samples)
+                pixel_radiance += (
+                    Vec(
+                        clamp(subpixel_radiance.x),
+                        clamp(subpixel_radiance.y),
+                        clamp(subpixel_radiance.z),
+                    )
+                    * 0.25
+                )
+        return pixel_radiance
+
+    @parameter
+    fn render_one_row(y: Int):
+        for x in range(w):
+            i = (h - y - 1) * w + x
+            image[i] += sample_one_pixel(x, y)
+
+    for y in range(h):
+        render_one_row(y)
 
     with open("image.ppm", "w") as f:
         f.write(String("P3\n{} {}\n255\n").format(w, h))
