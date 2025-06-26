@@ -1,5 +1,6 @@
 import math
 
+from algorithm.functional import parallelize
 from collections.inline_array import InlineArray
 from collections.optional import Optional, OptionalReg
 from layout import Layout, LayoutTensor
@@ -280,8 +281,7 @@ def main():
             i = (h - y - 1) * w + x
             image[i] += sample_one_pixel(x, y)
 
-    for y in range(h):
-        render_one_row(y)
+    parallelize[render_one_row](h)
 
     with open("image.ppm", "w") as f:
         f.write(String("P3\n{} {}\n255\n").format(w, h))
