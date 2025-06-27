@@ -4,11 +4,15 @@ from math import sin, cos, pi, sqrt
 from random.random import random_float64
 
 
-@fieldwise_init
 struct Vec(Copyable, Movable):
     var x: Float64
     var y: Float64
     var z: Float64
+
+    fn __init__(out self, x: Float64 = 0, y: Float64 = 0, z: Float64 = 0):
+        self.x = x
+        self.y = y
+        self.z = z
 
     fn __add__(self, rhs: Vec) -> Self:
         return Vec(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
@@ -93,41 +97,31 @@ fn create_scene() -> Scene:
         Sphere(
             1e5,
             {1e5 + 1, 40.8, 81.6},
-            {0, 0, 0},
+            {},
             {0.75, 0.25, 0.25},
             MAT_DIFFUSE,
         ),
         Sphere(
             1e5,
             {-1e5 + 99, 40.8, 81.6},
-            {0, 0, 0},
+            {},
             {0.25, 0.25, 0.75},
             MAT_DIFFUSE,
         ),
-        Sphere(
-            1e5, {50, 40.8, 1e5}, {0, 0, 0}, {0.75, 0.75, 0.75}, MAT_DIFFUSE
-        ),
-        Sphere(1e5, {50, 40.8, -1e5 + 170}, {0, 0, 0}, {0, 0, 0}, MAT_DIFFUSE),
-        Sphere(1e5, {50, 40.8, -1e5 + 170}, {0, 0, 0}, {0, 0, 0}, MAT_DIFFUSE),
-        Sphere(
-            1e5, {50, 1e5, 81.6}, {0, 0, 0}, {0.75, 0.75, 0.75}, MAT_DIFFUSE
-        ),
+        Sphere(1e5, {50, 40.8, 1e5}, {}, {0.75, 0.75, 0.75}, MAT_DIFFUSE),
+        Sphere(1e5, {50, 40.8, -1e5 + 170}, {}, {}, MAT_DIFFUSE),
+        Sphere(1e5, {50, 40.8, -1e5 + 170}, {}, {}, MAT_DIFFUSE),
+        Sphere(1e5, {50, 1e5, 81.6}, {}, {0.75, 0.75, 0.75}, MAT_DIFFUSE),
         Sphere(
             1e5,
             {50, -1e5 + 81.6, 81.6},
-            {0, 0, 0},
+            {},
             {0.75, 0.75, 0.75},
             MAT_DIFFUSE,
         ),
-        Sphere(
-            16.5, {27, 16.5, 47}, {0, 0, 0}, {0.999, 0.999, 0.999}, MAT_SPECULAR
-        ),
-        Sphere(
-            16.5, {73, 16.5, 78}, {0, 0, 0}, {0.999, 0.999, 0.999}, MAT_REFRACT
-        ),
-        Sphere(
-            600, {50, 681.6 - 0.27, 81.6}, {12, 12, 12}, {0, 0, 0}, MAT_DIFFUSE
-        ),
+        Sphere(16.5, {27, 16.5, 47}, {}, {0.999, 0.999, 0.999}, MAT_SPECULAR),
+        Sphere(16.5, {73, 16.5, 78}, {}, {0.999, 0.999, 0.999}, MAT_REFRACT),
+        Sphere(600, {50, 681.6 - 0.27, 81.6}, {12, 12, 12}, {}, MAT_DIFFUSE),
     ]
 
 
@@ -151,7 +145,7 @@ fn closest_intersect[
 fn radiance(ray: Ray, owned depth: Int, scene: Scene) -> Vec:
     maybe_intersect = closest_intersect(ray, scene)
     if maybe_intersect is None:
-        return Vec(0, 0, 0)
+        return Vec()
     dist, obj_ptr = maybe_intersect.unsafe_value()
     ref obj = obj_ptr[]
     hit = ray.origin + ray.dir * dist
@@ -175,7 +169,7 @@ fn radiance(ray: Ray, owned depth: Int, scene: Scene) -> Vec:
         r2 = random_float64()
         r2s = sqrt(r2)
         w = norm_outward
-        u = (Vec(0, 1, 0) if abs(w.x) > 0.1 else Vec(1, 0, 0)).cross(w).norm()
+        u = (Vec(y=1) if abs(w.x) > 0.1 else Vec(x=1)).cross(w).norm()
         v = w.cross(u)
         d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
         return obj.emission + f * (radiance({hit, d}, depth, scene))
@@ -234,19 +228,19 @@ fn toIntColor(x: Float64) -> Int:
 def main():
     alias w = 1024
     alias h = 768
-    image = List(length=w * h, fill=Vec(0, 0, 0))
+    image = List(length=w * h, fill=Vec())
 
     samples = 32
     cam = Ray(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm())
-    cx = Vec(w * 0.5135 / h, 0, 0)
+    cx = Vec(x=w * 0.5135 / h)
     cy = cx.cross(cam.dir).norm() * 0.5135
     scene = create_scene()
 
     fn sample_one_pixel(x: Int, y: Int) -> Vec:
-        pixel_radiance = Vec(0, 0, 0)
+        pixel_radiance = Vec()
         for sy in range(2):
             for sx in range(2):
-                subpixel_radiance = Vec(0, 0, 0)
+                subpixel_radiance = Vec()
                 for _ in range(samples):
                     r1 = 2 * random_float64()
                     r2 = 2 * random_float64()
