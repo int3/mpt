@@ -197,32 +197,30 @@ fn radiance(ray: Ray, owned depth: Int, scene: Scene) -> Vec:
         nc = 1
         nt = 1.5
         nnt = nc / nt if is_into else nt / nc
-        ddn = ray.dir.dot(norm_outward)
-        cos2t = 1 - nnt * nnt * (1 - ddn * ddn)
-        if cos2t < 0:
+        cos_theta1 = ray.dir.dot(norm_outward)
+        cos_theta2_sq = 1 - nnt**2 * (1 - cos_theta1**2)
+        if cos_theta2_sq < 0:
             return obj.emission + f * (radiance(refl_ray, depth, scene))
         tdir = (
             ray.dir * nnt
-            - norm * (1 if is_into else -1) * (ddn * nnt + sqrt(cos2t))
+            - norm_outward * (cos_theta1 * nnt + sqrt(cos_theta2_sq))
         ).norm()
-        a = nt - nc
-        b = nt + nc
-        r0 = a * a / (b * b)
-        c = 1 - (-ddn if is_into else tdir.dot(norm))
-        re = r0 + (1 - r0) * c * c * c * c * c
-        tr = 1 - re
-        p = 0.25 + 0.5 * re
-        rp = re / p
-        tp = tr / (1 - p)
+        r0 = ((nt - nc) / (nt + nc)) ** 2
+        cos_theta_out = -cos_theta1 if is_into else tdir.dot(norm)
+        reflectance = r0 + (1 - r0) * (1 - cos_theta_out) ** 5
+        transmission = 1 - reflectance
+        p = 0.25 + 0.5 * reflectance
         if depth > 2:
             if random_float64() < p:
-                rad = radiance(refl_ray, depth, scene) * rp
+                rad = radiance(refl_ray, depth, scene) * (reflectance / p)
             else:
-                rad = radiance({hit, tdir}, depth, scene) * tp
+                rad = radiance({hit, tdir}, depth, scene) * (
+                    transmission / (1 - p)
+                )
         else:
             rad = (
-                radiance(refl_ray, depth, scene) * re
-                + radiance({hit, tdir}, depth, scene) * tr
+                radiance(refl_ray, depth, scene) * reflectance
+                + radiance({hit, tdir}, depth, scene) * transmission
             )
         return obj.emission + rad
 
