@@ -268,7 +268,7 @@ def main():
     fn render_one_row(y: Int):
         for x in range(w):
             i = (h - y - 1) * w + x
-            image[i] += sample_one_pixel(x, y)
+            image[i] = sample_one_pixel(x, y)
 
     parallelize[render_one_row](h)
 
