@@ -93,32 +93,18 @@ alias Scene = List[Sphere]
 
 
 fn create_scene() -> Scene:
+    grey = Vec(0.75, 0.75, 0.75)
+    light_blue = Vec(0.25, 0.25, 0.75)
+    light_red = Vec(0.75, 0.25, 0.25)
+
     return [
-        Sphere(
-            1e5,
-            {1e5 + 1, 40.8, 81.6},
-            {},
-            {0.75, 0.25, 0.25},
-            MAT_DIFFUSE,
-        ),
-        Sphere(
-            1e5,
-            {-1e5 + 99, 40.8, 81.6},
-            {},
-            {0.25, 0.25, 0.75},
-            MAT_DIFFUSE,
-        ),
-        Sphere(1e5, {50, 40.8, 1e5}, {}, {0.75, 0.75, 0.75}, MAT_DIFFUSE),
+        Sphere(1e5, {1e5 + 1, 40.8, 81.6}, {}, light_red, MAT_DIFFUSE),
+        Sphere(1e5, {-1e5 + 99, 40.8, 81.6}, {}, light_blue, MAT_DIFFUSE),
+        Sphere(1e5, {50, 40.8, 1e5}, {}, grey, MAT_DIFFUSE),
         Sphere(1e5, {50, 40.8, -1e5 + 170}, {}, {}, MAT_DIFFUSE),
         Sphere(1e5, {50, 40.8, -1e5 + 170}, {}, {}, MAT_DIFFUSE),
-        Sphere(1e5, {50, 1e5, 81.6}, {}, {0.75, 0.75, 0.75}, MAT_DIFFUSE),
-        Sphere(
-            1e5,
-            {50, -1e5 + 81.6, 81.6},
-            {},
-            {0.75, 0.75, 0.75},
-            MAT_DIFFUSE,
-        ),
+        Sphere(1e5, {50, 1e5, 81.6}, {}, grey, MAT_DIFFUSE),
+        Sphere(1e5, {50, -1e5 + 81.6, 81.6}, {}, grey, MAT_DIFFUSE),
         Sphere(16.5, {27, 16.5, 47}, {}, {0.999, 0.999, 0.999}, MAT_SPECULAR),
         Sphere(16.5, {73, 16.5, 78}, {}, {0.999, 0.999, 0.999}, MAT_REFRACT),
         Sphere(600, {50, 681.6 - 0.27, 81.6}, {12, 12, 12}, {}, MAT_DIFFUSE),
