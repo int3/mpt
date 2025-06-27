@@ -1,10 +1,6 @@
-import math
-
 from algorithm.functional import parallelize
-from collections.inline_array import InlineArray
 from collections.optional import Optional, OptionalReg
-from layout import Layout, LayoutTensor
-from math import sqrt
+from math import sin, cos, pi, sqrt
 from random.random import random_float64
 
 
@@ -175,15 +171,13 @@ fn radiance(ray: Ray, owned depth: Int, scene: Scene) -> Vec:
             return obj.emission
 
     if obj.mat == MAT_DIFFUSE:
-        r1 = 2 * math.pi * random_float64()
+        r1 = 2 * pi * random_float64()
         r2 = random_float64()
         r2s = sqrt(r2)
         w = norm_outward
         u = (Vec(0, 1, 0) if abs(w.x) > 0.1 else Vec(1, 0, 0)).cross(w).norm()
         v = w.cross(u)
-        d = (
-            u * math.cos(r1) * r2s + v * math.sin(r1) * r2s + w * sqrt(1 - r2)
-        ).norm()
+        d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
         return obj.emission + f * (radiance({hit, d}, depth, scene))
     elif obj.mat == MAT_SPECULAR:
         return obj.emission + f * (
