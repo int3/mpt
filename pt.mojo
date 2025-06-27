@@ -226,11 +226,18 @@ fn toIntColor(x: Float64) -> Int:
 
 
 def main():
+    from sys import argv
+
+    args = argv()
+    if len(args) > 1:
+        samples = Int(args[1])
+    else:
+        samples = 32
+
     alias w = 1024
     alias h = 768
     image = List(length=w * h, fill=Vec())
 
-    samples = 32
     cam = Ray(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm())
     cx = Vec(x=w * 0.5135 / h)
     cy = cx.cross(cam.dir).norm() * 0.5135
