@@ -165,6 +165,9 @@ fn radiance(ray: Ray, owned depth: Int, scene: Scene) -> Vec:
 
     max_refl = f.max()
     depth += 1
+    if depth > 1000:  # avoid stack overflow
+        return obj.emission
+
     if depth > 5:
         if random_float64() < max_refl:
             f = f * (1 / max_refl)
